@@ -3,10 +3,10 @@
   command = "npm run build"
   publish = "dist"
 
-# Proxy /api/* to Railway backend (set BACKEND_URL in Netlify env vars)
+# Proxy /api/* to Railway backend
 [[redirects]]
   from  = "/api/*"
-  to    = "${BACKEND_URL}/api/:splat"
+  to    = "https://agv-backend-production.up.railway.app/api/:splat"
   status = 200
   force  = true
 
