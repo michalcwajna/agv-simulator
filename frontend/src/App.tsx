@@ -5,6 +5,7 @@ import { MapViewer } from './components/MapViewer';
 import { PointLayer } from './components/PointLayer';
 import { ObstacleLayer } from './components/ObstacleLayer';
 import { RouteLayer } from './components/RouteLayer';
+import { LoginScreen, isAuthenticated } from './components/LoginScreen';
 import { useSimulatorStore } from './stores/useSimulatorStore';
 import { loadMapData, saveMapData } from './api';
 
@@ -23,8 +24,13 @@ export interface ApsViewer {
 type Viewer = ApsViewer;
 
 export default function App() {
+  const [authed, setAuthed] = useState(isAuthenticated());
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const uploadStatus = useSimulatorStore((s) => s.uploadStatus);
+
+  if (!authed) {
+    return <LoginScreen onSuccess={() => setAuthed(true)} />;
+  }
   const urn          = useSimulatorStore((s) => s.urn);
   const points       = useSimulatorStore((s) => s.points);
   const obstacles    = useSimulatorStore((s) => s.obstacles);
