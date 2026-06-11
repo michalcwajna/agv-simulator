@@ -24,19 +24,15 @@ export interface ApsViewer {
 type Viewer = ApsViewer;
 
 export default function App() {
-  const [authed, setAuthed] = useState(isAuthenticated());
-  const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [authed, setAuthed]   = useState(isAuthenticated());
+  const [viewer, setViewer]   = useState<Viewer | null>(null);
   const uploadStatus = useSimulatorStore((s) => s.uploadStatus);
-
-  if (!authed) {
-    return <LoginScreen onSuccess={() => setAuthed(true)} />;
-  }
   const urn          = useSimulatorStore((s) => s.urn);
   const points       = useSimulatorStore((s) => s.points);
   const obstacles    = useSimulatorStore((s) => s.obstacles);
 
-  const isHydrating  = useRef(false);
-  const saveTimer    = useRef<ReturnType<typeof setTimeout>>();
+  const isHydrating = useRef(false);
+  const saveTimer   = useRef<ReturnType<typeof setTimeout>>();
 
   const handleViewerReady = useCallback(async (v: Viewer) => {
     setViewer(v);
@@ -56,7 +52,6 @@ export default function App() {
     }
   }, []);
 
-  // Auto-save points + obstacles to server whenever they change (debounced)
   useEffect(() => {
     if (!viewer || !urn) return;
     if (isHydrating.current) return;
@@ -69,6 +64,11 @@ export default function App() {
       );
     }, 800);
   }, [points, obstacles, viewer, urn]);
+
+  // All hooks above — conditional render below
+  if (!authed) {
+    return <LoginScreen onSuccess={() => setAuthed(true)} />;
+  }
 
   return (
     <div className="layout">
