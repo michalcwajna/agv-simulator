@@ -55,7 +55,7 @@ class APSService:
             r2 = await client.post(
                 f"{APS_BASE}/oss/v2/buckets",
                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-                json={"bucketKey": self.bucket_key, "policyKey": "transient"},
+                json={"bucketKey": self.bucket_key, "policyKey": "temporary"},
             )
             if r2.status_code not in (200, 409):
                 r2.raise_for_status()

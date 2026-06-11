@@ -141,7 +141,13 @@ export function MapViewer({ onViewerReady }: Props) {
             } catch (e) { console.warn('[MapViewer] unit detection failed:', e); }
           });
         },
-        (code: number, msg: string) => console.error(`APS load error ${code}: ${msg}`),
+        (code: number, msg: string) => {
+          console.error(`APS load error ${code}: ${msg}`);
+          useSimulatorStore.getState().setUploadStatus(
+            'error',
+            'Nie można załadować mapy — plik wygasł lub jest niedostępny. Wgraj plik ponownie.',
+          );
+        },
       );
     });
 

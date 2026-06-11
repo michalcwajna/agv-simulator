@@ -31,8 +31,26 @@ export default function App() {
   const points       = useSimulatorStore((s) => s.points);
   const obstacles    = useSimulatorStore((s) => s.obstacles);
 
-  const isHydrating = useRef(false);
-  const saveTimer   = useRef<ReturnType<typeof setTimeout>>();
+  const isHydrating   = useRef(false);
+  const saveTimer     = useRef<ReturnType<typeof setTimeout>>();
+  const apsChecked    = useRef(false);
+
+  // On first mount: verify the saved URN is still valid in APS (transient files expire)
+  useEffect(() => {
+    if (apsChecked.current) return;
+    apsChecked.current = true;
+    if (!urn || uploadStatus !== 'ready') return;
+
+    fetch(`/api/aps/status/${urn}`)
+      .then((r) => r.json())
+      .then(({ status }: { status: string }) => {
+        if (status !== 'success') {
+          useSimulatorStore.getState().reset();
+        }
+      })
+      .catch(() => { /* network error — let viewer try, it'll show its own error */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleViewerReady = useCallback(async (v: Viewer) => {
     setViewer(v);
