@@ -110,11 +110,21 @@ export function MapViewer({ onViewerReady }: Props) {
         (doc: unknown) => {
           const root = (doc as { getRoot: () => { search: (q: object) => unknown[]; getDefaultGeometry: () => unknown } }).getRoot();
           const views2d = root.search({ type: 'geometry', role: '2d' });
-          const target = views2d.length > 0 ? views2d[0] : root.getDefaultGeometry();
+          const views3d = root.search({ type: 'geometry', role: '3d' });
+          const target = views2d[0] ?? views3d[0] ?? root.getDefaultGeometry();
+          console.info('[MapViewer] 2d views:', views2d.length, '3d views:', views3d.length, 'target:', target);
+
+          if (!target) {
+            useSimulatorStore.getState().setUploadStatus('error', 'Plik nie zawiera geometrii. Sprawdź czy plik jest poprawny.');
+            return;
+          }
+
           viewer.loadDocumentNode(doc, target).then(() => {
             onViewerReady(viewer);
-            // Detect units immediately after model is loaded
             detectUnits(viewer);
+          }).catch((err: unknown) => {
+            console.error('[MapViewer] loadDocumentNode failed:', err);
+            useSimulatorStore.getState().setUploadStatus('error', 'Nie udało się załadować widoku. Wgraj plik ponownie.');
           });
 
           viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, () => {

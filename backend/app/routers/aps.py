@@ -1,4 +1,5 @@
 import base64
+import re
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile, File
 
@@ -28,7 +29,9 @@ async def upload(background_tasks: BackgroundTasks, file: UploadFile = File(...)
         raise HTTPException(400, "Obsługiwane formaty: .dwg, .dxf")
 
     content = await file.read()
-    object_key = (file.filename or "drawing").replace(" ", "_")
+    # APS OSS keys must be ASCII-safe — strip diacritics/non-ASCII chars
+    raw_name = (file.filename or "drawing")
+    object_key = re.sub(r'[^a-zA-Z0-9._\-]', '_', raw_name)
 
     # URN is deterministic — compute immediately and return without waiting for S3
     urn = _compute_urn(object_key)
