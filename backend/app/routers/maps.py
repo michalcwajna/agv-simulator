@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -17,8 +17,8 @@ class MapPayload(BaseModel):
     obstacles: list[Any] = []
 
 
-@router.get("/{urn}")
-def get_map_data(urn: str, db: Session = Depends(get_db)):
+@router.get("")
+def get_map_data(urn: str = Query(...), db: Session = Depends(get_db)):
     row = db.query(MapData).filter(MapData.urn == urn).first()
     if not row:
         return {"points": [], "obstacles": []}
@@ -28,8 +28,8 @@ def get_map_data(urn: str, db: Session = Depends(get_db)):
     }
 
 
-@router.put("/{urn}")
-def save_map_data(urn: str, payload: MapPayload, db: Session = Depends(get_db)):
+@router.put("")
+def save_map_data(urn: str = Query(...), payload: MapPayload = Body(...), db: Session = Depends(get_db)):
     row = db.query(MapData).filter(MapData.urn == urn).first()
     if not row:
         row = MapData(urn=urn)
