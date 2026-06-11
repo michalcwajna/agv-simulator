@@ -122,5 +122,8 @@ class APSService:
                 f"{APS_BASE}/modelderivative/v2/designdata/{urn}/manifest",
                 headers={"Authorization": f"Bearer {token}"},
             )
+            # 404 = file not yet uploaded/translated — treat as pending
+            if r.status_code == 404:
+                return {"status": "pending", "progress": "przesyłanie pliku…"}
             r.raise_for_status()
             return r.json()
