@@ -1,14 +1,24 @@
 import { useRef, useState, DragEvent, ChangeEvent } from 'react';
 import { useSimulatorStore } from '../stores/useSimulatorStore';
 
+function buildShareLink(urn: string): string {
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.searchParams.set('urn', urn);
+  return url.toString();
+}
+
 export function UploadPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const {
     uploadStatus,
     uploadError,
     translationProgress,
+    fileName,
+    urn,
     setUploadStatus,
     setTranslationProgress,
     setUrn,
@@ -16,6 +26,14 @@ export function UploadPanel() {
   } = useSimulatorStore();
 
   const busy = uploadStatus === 'uploading' || uploadStatus === 'translating';
+
+  const copyLink = () => {
+    if (!urn) return;
+    navigator.clipboard.writeText(buildShareLink(urn)).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
 
   const processFile = async (file: File) => {
     const name = file.name.toLowerCase();
@@ -123,13 +141,40 @@ export function UploadPanel() {
       )}
 
       {uploadStatus === 'ready' && (
-        <button className="btn btn-danger" onClick={reset} style={{ marginTop: 10 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="1 4 1 10 7 10" />
-            <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-          </svg>
-          Wczytaj inny plik
-        </button>
+        <>
+          {fileName && (
+            <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)',
+              display: 'flex', alignItems: 'center', gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {fileName}
+              </span>
+            </div>
+          )}
+
+          <button
+            className="btn"
+            style={{ marginTop: 8, borderColor: 'var(--accent)', color: 'var(--accent)', width: '100%' }}
+            onClick={copyLink}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+            </svg>
+            {copied ? 'Skopiowano!' : 'Kopiuj link projektu'}
+          </button>
+
+          <button className="btn btn-danger" onClick={reset} style={{ marginTop: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+            </svg>
+            Wczytaj inny plik
+          </button>
+        </>
       )}
     </>
   );

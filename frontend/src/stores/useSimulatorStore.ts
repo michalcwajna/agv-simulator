@@ -4,7 +4,17 @@ import type { ModelBounds, ObstacleZone, OperationalPoint, PointType, Route, Upl
 const LS_URN      = 'agv:urn';
 const LS_FILENAME = 'agv:fileName';
 
-const savedUrn      = localStorage.getItem(LS_URN);
+// URL param takes priority over localStorage (shareable links)
+const _urlUrn = new URLSearchParams(window.location.search).get('urn');
+if (_urlUrn) {
+  localStorage.setItem(LS_URN, _urlUrn);
+  // Clean the urn param from the address bar without reloading
+  const _clean = new URL(window.location.href);
+  _clean.searchParams.delete('urn');
+  window.history.replaceState({}, '', _clean.toString());
+}
+
+const savedUrn      = _urlUrn ?? localStorage.getItem(LS_URN);
 const savedFileName = localStorage.getItem(LS_FILENAME);
 
 interface SimulatorStore {
